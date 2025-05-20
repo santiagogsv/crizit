@@ -71,6 +71,7 @@ def main() -> None:
             | (merged["amount_upl"].isna())
         ]
 
+        # Print results
         if not mismatches.empty:
             print("The following invoices do not match:")
             print(mismatches)
@@ -110,8 +111,8 @@ def main() -> None:
             | (merged["amount_line"].isna())
         ]
 
+        # Print results
         print("----------------------------------------------")
-
         if not mismatches.empty:
             print("Invoice lines that do not match:")
             print(mismatches)
@@ -141,8 +142,8 @@ def main() -> None:
         merged["variance"] = (merged["count_vr"] - merged["count"]).abs()
         mismatches = merged[merged["variance"] > 0]
 
+        # Print results
         print("----------------------------------------------")
-
         if not mismatches.empty:
             print("Invoices with different number of lines:")
             print(mismatches)
@@ -153,20 +154,30 @@ def main() -> None:
 
     # Check if at least one invoice is uploaded for each account and month
     def check_missing_invoice() -> None:
+        # Drop unnecessary columns to keep only relevant data
         check_invoice = uploads[uploads["file"] == "invoice"].drop(
             columns=["file", "vr"]
         )
 
+        # Create a complete index of all possible account-month combinations
         invoice_index = pd.MultiIndex.from_product(
             [account["account"], months], names=["account", "month"]
         )
+
+        # Group the filtered data by account and month, keeping only the first entry per group
         grouped = check_invoice.groupby(["account", "month"]).first().reset_index()
+
+        # Merge the grouped data with the complete index to ensure all combinations are present
         complete_df = (
             grouped.set_index(["account", "month"]).reindex(invoice_index).reset_index()
         )
+
+        # Identify rows where the 'invoice' value is missing
         missing = complete_df[complete_df["invoice"].isna()].drop(
             columns=["invoice", "amount"]
         )
+
+        # Print results
         print("----------------------------------------------")
         if not missing.empty:
             print("Accounts with missing invoices:")
@@ -178,24 +189,32 @@ def main() -> None:
 
     # Check if at least two verification reports are uploaded for each account and month
     def check_missing_vr() -> None:
+        # Filter for verification reports
         check_vr = uploads[uploads["file"] == "verification_report"].drop(
             columns=["invoice", "file", "amount", "vr"]
         )
 
+        # Create a complete index of all possible combinations of accounts and months
         full_index = pd.MultiIndex.from_product(
             [account["account"], months], names=["account", "month"]
         )
 
+        # Count the number of verification reports per account and month
         vr_counts = (
             check_vr.groupby(["account", "month"]).size().reset_index(name="count")
         )
+
+        # Merge the counts with the full index to ensure all combinations are present
         vr_complete = (
             vr_counts.set_index(["account", "month"])
             .reindex(full_index, fill_value=0)
             .reset_index()
         )
 
+        # Check if any account-month pair has less than 2 verification reports
         missing_vr = vr_complete[vr_complete["count"] < 2]
+
+        # Print results
         print("----------------------------------------------")
         if not missing_vr.empty:
             print("Accounts with missing verification reports:")
