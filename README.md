@@ -58,6 +58,30 @@ Uses DuckDB (`test.db` or `test_missing.db`). Switch by commenting/uncommenting.
 ## Output
 Prints results for each check, listing mismatches or confirming consistency.
 
+```
+--------------------CHECKS--------------------
+All invoices match between uploads and invoice table.
+----------------------------------------------
+All invoice lines match with the invoice table.
+----------------------------------------------
+All invoices have the same number of lines in both tables.
+----------------------------------------------
+Accounts with missing invoices:
+    account  month
+0         1      3
+50       10      3
+----------------------------------------------
+Accounts with missing verification reports:
+    account  month  count
+0         1      3      0
+10        3      3      0
+20        4      3      0
+30        6      3      0
+40        7      3      0
+50       10      3      0
+57       10     10      0
+```
+
 ## Limitations
 - Hardcoded months, years and database paths.
 
