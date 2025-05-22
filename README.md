@@ -59,18 +59,65 @@ Uses DuckDB (`test.db` or `test_missing.db`). Switch by commenting/uncommenting.
 Prints results for each check, listing mismatches or confirming consistency.
 
 ```
---------------------CHECKS--------------------
-All invoices match between uploads and invoice table.
-----------------------------------------------
-All invoice lines match with the invoice table.
-----------------------------------------------
-All invoices have the same number of lines in both tables.
-----------------------------------------------
+----- CHECK 'INVOICE' AGAINST 'UPLOADS' TABLE -----
+All invoices match between 'uploads' and 'invoice' table.
+
+----- CHECK 'INVOICE_LINE' AGAINST 'INVOICE' TABLE -----
+All amounts match between 'invoice' and 'invoice_line' table.
+
+----- CHECK 'INVOICE_LINE_VR' AGAINST 'INVOICE_LINE' TABLE -----
+All lines match between 'invoice_line' and 'invoice_line_vr'.
+
+----- CHECK 'INVOICE' UPLOADS -----
 Accounts with missing invoices:
     account  month
 0         1      3
 50       10      3
-----------------------------------------------
+
+----- CHECK 'VERIFICATION_REPORT' UPLOADS -----
+Accounts with missing verification reports:
+    account  month  count
+0         1      3      0
+10        3      3      0
+20        4      3      0
+30        6      3      0
+40        7      3      0
+50       10      3      0
+57       10     10      0
+```
+
+Output of 'test_missing.db' with lines deleted on 'invoice' and 'invoice_line':
+- Deleted invoice 5 and modified invoice 8 to 10,000 on "test_missing.db"
+- Deleted one line from invoice 4 with amount 205 on "inovice_line"
+- Added a new line for invoice 140 with amount 968 on "invoice_line_vr"
+
+```
+----- CHECK 'INVOICE' AGAINST 'UPLOADS' TABLE -----
+The following invoices do not match:
+    account  month  invoice  amount_inv  amount_upl  variance
+10        1      9        8     10000.0     23716.0   13716.0
+34        4      9        5         NaN    114568.0       NaN
+
+----- CHECK 'INVOICE_LINE' AGAINST 'INVOICE' TABLE -----
+Invoice lines that do not match:
+   account  month  invoice         amount    amount_line      variance
+0      3.0    9.0        4  114294.382812  114089.093750    205.289062
+1      NaN    NaN        5            NaN  114567.500000           NaN
+3      1.0    9.0        8   10000.000000   23715.779297  13715.779297
+
+----- CHECK 'INVOICE_LINE_VR' AGAINST 'INVOICE_LINE' TABLE -----
+Invoices with different number of lines:
+    invoice  count_vr  count  variance
+0         4        67     66         1
+75      140        65     64         1
+
+----- CHECK 'INVOICE' UPLOADS -----
+Accounts with missing invoices:
+    account  month
+0         1      3
+50       10      3
+
+----- CHECK 'VERIFICATION_REPORT' UPLOADS -----
 Accounts with missing verification reports:
     account  month  count
 0         1      3      0

@@ -10,12 +10,12 @@ def read_sql(file_path) -> str:
 def main() -> None:
     # Connect to DuckDB database
 
-    con = duckdb.connect(
-        "test.db"
-    )  # Comment to connect to the test_missing.db database
     # con = duckdb.connect(
-    #     "test_missing.db"
-    # )  # Uncomment to connect to the test_missing.db database
+    #     "test.db"
+    # )  # Comment to connect to the test_missing.db database
+    con = duckdb.connect(
+        "test_missing.db"
+    )  # Uncomment to connect to the test_missing.db database
 
     # Read SQL files and load data into DataFrames
     account = con.sql(read_sql("sql/account.sql")).df()
@@ -34,8 +34,6 @@ def main() -> None:
     # print(invoice_line)
     # print(invoice_line_vr)
     # print(uploads)
-
-    print("--------------------CHECKS--------------------")
 
     # Check if the "invoice" matches with "uploads", compare the "amount" column, show variance
     # Deleted invoice 5 and modified invoice 8 to 10,000 on "test_missing.db"
@@ -64,19 +62,20 @@ def main() -> None:
         # Calculate variance
         merged["variance"] = (merged["amount_inv"] - merged["amount_upl"]).abs()
 
-        # Find mismatches
+        # Find mismatches and drop unnecessary columns
         mismatches = merged[
             (merged["variance"] > 0.01)
             | (merged["amount_inv"].isna())
             | (merged["amount_upl"].isna())
-        ]
+        ].drop(columns=["file", "vr"])
 
+        print("----- CHECK 'INVOICE' AGAINST 'UPLOADS' TABLE -----")
         # Print results
         if not mismatches.empty:
             print("The following invoices do not match:")
             print(mismatches)
         else:
-            print("All invoices match between uploads and invoice table.")
+            print("All invoices match between 'uploads' and 'invoice' table.")
 
     check_invoice_match()
 
@@ -112,12 +111,13 @@ def main() -> None:
         ]
 
         # Print results
-        print("----------------------------------------------")
+        print()
+        print("----- CHECK 'INVOICE_LINE' AGAINST 'INVOICE' TABLE -----")
         if not mismatches.empty:
             print("Invoice lines that do not match:")
             print(mismatches)
         else:
-            print("All invoice lines match with the invoice table.")
+            print("All amounts match between 'invoice' and 'invoice_line' table.")
 
     check_invoice_line()
 
@@ -143,12 +143,13 @@ def main() -> None:
         mismatches = merged[merged["variance"] > 0]
 
         # Print results
-        print("----------------------------------------------")
+        print()
+        print("----- CHECK 'INVOICE_LINE_VR' AGAINST 'INVOICE_LINE' TABLE -----")
         if not mismatches.empty:
             print("Invoices with different number of lines:")
             print(mismatches)
         else:
-            print("All invoices have the same number of lines in both tables.")
+            print("All lines match between 'invoice_line' and 'invoice_line_vr'.")
 
     check_invoice_line_vr()
 
@@ -178,7 +179,8 @@ def main() -> None:
         )
 
         # Print results
-        print("----------------------------------------------")
+        print()
+        print("----- CHECK 'INVOICE' UPLOADS -----")
         if not missing.empty:
             print("Accounts with missing invoices:")
             print(missing)
@@ -215,7 +217,8 @@ def main() -> None:
         missing_vr = vr_complete[vr_complete["count"] < 2]
 
         # Print results
-        print("----------------------------------------------")
+        print()
+        print("----- CHECK 'VERIFICATION_REPORT' UPLOADS -----")
         if not missing_vr.empty:
             print("Accounts with missing verification reports:")
             print(missing_vr)
