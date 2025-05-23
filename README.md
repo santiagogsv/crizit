@@ -10,9 +10,10 @@ Validates data from a DuckDB database, checking invoices, invoice lines, verific
 ## Dependencies
 - `pandas`
 - `duckdb`
+- `numpy`
 
-Install: `pip install pandas duckdb`
-or using uv `uv run main.py`
+Install using 'uv' (recommended): `uv run main.py`
+or using pip `pip install pandas duckdb numpy`
 
 ## File Structure
 - **Script**: Main logic for database connection and validation.
@@ -30,29 +31,37 @@ Uses DuckDB (`test.db` or `test_missing.db`). Switch by commenting/uncommenting.
 - test_missing.db edited for testing error checks.
 
 ## Functionality
-1. **Invoice Match** (`check_invoice_match`):
-   - Compares `amount` in `invoice` vs. `uploads`.
-   - Reports mismatches or confirms matches.
+1. **Missing Invoices** (`check_missing_invoice`):
+   - Ensures at least one invoice is uploaded for each account and month (March to December).
+   - Reports account-months with missing invoices.
 
-2. **Invoice Line** (`check_invoice_line`):
-   - Compares sum of `amount` in `invoice_line` vs. `invoice`.
-   - Reports discrepancies.
+2. **Missing Verification Reports** (`check_missing_vr`):
+   - Ensures at least two verification reports are uploaded for each account and month.
+   - Reports account-months with insufficient verification reports.
 
-3. **Invoice Line VR** (`check_invoice_line_vr`):
-   - Compares line counts per `invoice` in `invoice_line` vs. `invoice_line_vr`.
-   - Reports differences.
+3. **Invoice Match** (`check_invoice_match`):
+   - Compares the "amount" in the "invoice" table with the "uploads" table for matching invoices.
+   - Reports variances in amounts or missing entries.
 
-4. **Missing Invoices** (`check_missing_invoice`):
-   - Checks for at least one invoice per `account` and `month` (Mar-Dec).
-   - Reports missing invoices.
+4. **Invoice Line Totals** (`check_invoice_line`):
+   - Compares the sum of "amount" from "invoice_line" with the "amount" in the "invoice" table for each invoice.
+   - Reports discrepancies in totals.
 
-5. **Missing VR** (`check_missing_vr`):
-   - Ensures ≥2 verification reports per `account` and `month`.
-   - Reports missing reports.
+5. **Invoice Line VR Line Counts** (`check_invoice_line_vr`):
+   - Compares the number of lines per invoice in "invoice_line" and "invoice_line_vr".
+   - Reports invoices with differing line counts.
+
+6. **Invoice Line VR Quantities** (`check_invoice_line_vr_quantity`):
+   - Compares the total quantities for each description per invoice between "invoice_line" and "invoice_line_vr".
+   - Provides a summary of discrepancies by invoice, with an option to show detailed discrepancies by setting `summary_only=False`.
+
+7. **Missing/Extra Lines** (`check_missing_extra_lines`):
+   - Checks for descriptions that are present in "invoice_line" but missing in "invoice_line_vr", and vice versa, for each invoice.
+   - Reports missing or extra descriptions per invoice.
 
 ## Usage
 1. Place SQL files in `sql/` and database in script directory.
-2. Run: `python main.py` or `uv run main.py`
+2. Run: `uv run main.py` or `python main.py`
 3. Outputs discrepancies or confirmation for each check on terminal.
 
 ## Output
