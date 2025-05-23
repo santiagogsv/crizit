@@ -192,16 +192,18 @@ No missing or extra lines detected.
 Discrepancies found in 76 invoices.
 Showing the first 3 ('limit' parameter default = 3).
 
+====================================================================
+
 Discrepancies for Invoice: 4
 
 Missing in invoice_line_vr:
-Description                       Quantity (invoice_line)
-------------------------------------------------
+Description                       Qty (invoice_line)
+----------------------------------------------------
 static data refresh fee                         1
 
 Quantity mismatches:
-Description                       Quantity (invoice_line) Quantity (invoice_line_vr)
----------------------------------------------------------------
+Description                       Qty (invoice_line) Qty (invoice_line_vr)
+--------------------------------------------------------------------------
 (access) cmoabs pxeod                          22              15
 (access) cmoabs secmastr                       30              15
 (access) corp deriveod                        430             227
@@ -235,19 +237,21 @@ Description                       Quantity (invoice_line) Quantity (invoice_line
 (accessbo) opfutfx secmastr                   105               5
 (accessbo) sovsupagny secmastr              16084            1846
 
+====================================================================
+
 Discrepancies for Invoice: 5
 
 Missing in invoice_line_vr:
-Description                       Quantity (invoice_line)
-------------------------------------------------
+Description                       Qty (invoice_line)
+----------------------------------------------------
 (access) funds deriveod                        22
 (access) funds pxeod                          357
 (access) funds secmastr                        22
 static data refresh fee                         1
 
 Quantity mismatches:
-Description                       Quantity (invoice_line) Quantity (invoice_line_vr)
----------------------------------------------------------------
+Description                       Qty (invoice_line) Qty (invoice_line_vr)
+--------------------------------------------------------------------------
 (access) cmoabs deriveod                     1120             714
 (access) cmoabs history                       712             711
 (access) cmoabs rgriskg3misc                  712             711
@@ -276,11 +280,13 @@ Description                       Quantity (invoice_line) Quantity (invoice_line
 (access) usgovt secmastr                     1350              46
 (accessbo) eqtyeqtyind secmastr                13               1
 
+====================================================================
+
 Discrepancies for Invoice: 6
 
 Quantity mismatches:
-Description                          Quantity (invoice_line) Quantity (invoice_line_vr)
-------------------------------------------------------------------
+Description                          Qty (invoice_line) Qty (invoice_line_vr)
+-----------------------------------------------------------------------------
 schd fi fundamentals unique                     9645            9648
 sched cmo/abs secmaster unique                    61             497
 sched equity derived unique                      181             120
@@ -443,21 +449,23 @@ Lines with discrepancies:
 Discrepancies found in 76 invoices.
 Showing the first 3 ('limit' parameter default = 3).
 
+====================================================================
+
 Discrepancies for Invoice: 4
 
 Missing in invoice_line_vr:
-Description                       Quantity (invoice_line)
-------------------------------------------------
+Description                       Qty (invoice_line)
+----------------------------------------------------
 static data refresh fee                       1.0
 
 Extra in invoice_line_vr:
-Description                       Quantity (invoice_line_vr)
-------------------------------------------------
+Description                       Qty (invoice_line_vr)
+----------------------------------------------------
 (access) funds pxintra                      18663
 
 Quantity mismatches:
-Description                       Quantity (invoice_line) Quantity (invoice_line_vr)
----------------------------------------------------------------
+Description                       Qty (invoice_line) Qty (invoice_line_vr)
+--------------------------------------------------------------------------
 (access) cmoabs pxeod                        22.0              15
 (access) cmoabs secmastr                     30.0              15
 (access) corp deriveod                      430.0             227
@@ -491,19 +499,21 @@ Description                       Quantity (invoice_line) Quantity (invoice_line
 (accessbo) opfutfx secmastr                 105.0               5
 (accessbo) sovsupagny secmastr            16084.0            1846
 
+====================================================================
+
 Discrepancies for Invoice: 5
 
 Missing in invoice_line_vr:
-Description                       Quantity (invoice_line)
-------------------------------------------------
+Description                       Qty (invoice_line)
+----------------------------------------------------
 (access) funds deriveod                        22
 (access) funds pxeod                          357
 (access) funds secmastr                        22
 static data refresh fee                         1
 
 Quantity mismatches:
-Description                       Quantity (invoice_line) Quantity (invoice_line_vr)
----------------------------------------------------------------
+Description                       Qty (invoice_line) Qty (invoice_line_vr)
+--------------------------------------------------------------------------
 (access) cmoabs deriveod                     1120             714
 (access) cmoabs history                       712             711
 (access) cmoabs rgriskg3misc                  712             711
@@ -532,11 +542,13 @@ Description                       Quantity (invoice_line) Quantity (invoice_line
 (access) usgovt secmastr                     1350              46
 (accessbo) eqtyeqtyind secmastr                13               1
 
+====================================================================
+
 Discrepancies for Invoice: 6
 
 Quantity mismatches:
-Description                          Quantity (invoice_line) Quantity (invoice_line_vr)
-------------------------------------------------------------------
+Description                          Qty (invoice_line) Qty (invoice_line_vr)
+-----------------------------------------------------------------------------
 schd fi fundamentals unique                     9645            9648
 sched cmo/abs secmaster unique                    61             497
 sched equity derived unique                      181             120

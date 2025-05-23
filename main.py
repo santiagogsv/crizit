@@ -519,6 +519,9 @@ def main() -> None:
                 f"Discrepancies found in {len(discrepancies)} invoices.\nShowing the first {limit} ('limit' parameter default = 3)."
             )
             for inv_id in discrepancies[:limit]:  # Show details for first 3 invoices
+                print(
+                    "\n===================================================================="
+                )
                 print(f"\nDiscrepancies for Invoice: {inv_id}")
                 details = discrepancy_details[inv_id]
 
@@ -541,9 +544,9 @@ def main() -> None:
                 if details["missing_in_vr"]:
                     print("\nMissing in invoice_line_vr:")
                     print(
-                        f"{'Description':<{desc_width}} {'Quantity (invoice_line)':>{qty_width}}"
+                        f"{'Description':<{desc_width}} {'Qty (invoice_line)':>{qty_width}}"
                     )
-                    print("-" * (desc_width + qty_width))
+                    print("-" * (desc_width + qty_width + 4))
                     for item in details["missing_in_vr"]:
                         print(
                             f"{item['description']:<{desc_width}} {item['quantity_il']:>{qty_width}}"
@@ -553,9 +556,9 @@ def main() -> None:
                 if details["extra_in_vr"]:
                     print("\nExtra in invoice_line_vr:")
                     print(
-                        f"{'Description':<{desc_width}} {'Quantity (invoice_line_vr)':>{qty_width}}"
+                        f"{'Description':<{desc_width}} {'Qty (invoice_line_vr)':>{qty_width}}"
                     )
-                    print("-" * (desc_width + qty_width))
+                    print("-" * (desc_width + qty_width + 4))
                     for item in details["extra_in_vr"]:
                         print(
                             f"{item['description']:<{desc_width}} {item['quantity_vr']:>{qty_width}}"
@@ -565,9 +568,9 @@ def main() -> None:
                 if details["quantity_mismatch"]:
                     print("\nQuantity mismatches:")
                     print(
-                        f"{'Description':<{desc_width}} {'Quantity (invoice_line)':>{qty_width}} {'Quantity (invoice_line_vr)':>{qty_width}}"
+                        f"{'Description':<{desc_width}} {'Qty (invoice_line)':>{qty_width}} {'Qty (invoice_line_vr)':>{qty_width}}"
                     )
-                    print("-" * (desc_width + 2 * qty_width))
+                    print("-" * (desc_width + 2 * qty_width + 11))
                     for item in details["quantity_mismatch"]:
                         print(
                             f"{item['description']:<{desc_width}} {item['quantity_il']:>{qty_width}} {item['quantity_vr']:>{qty_width}}"
