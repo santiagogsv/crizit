@@ -1,5 +1,6 @@
 import pandas as pd
 import duckdb
+import numpy as np
 
 
 def read_sql(file_path) -> str:
@@ -9,13 +10,12 @@ def read_sql(file_path) -> str:
 
 def main() -> None:
     # Connect to DuckDB database
-
-    # con = duckdb.connect(
-    #     "test.db"
-    # )  # Comment to connect to the test_missing.db database
     con = duckdb.connect(
-        "test_missing.db"
-    )  # Uncomment to connect to the test_missing.db database
+        "test.db"
+    )  # Comment to connect to the test_missing.db database
+    # con = duckdb.connect(
+    #     "test_missing.db"
+    # )  # Uncomment to connect to the test_missing.db database
 
     # Read SQL files and load data into DataFrames
     account = con.sql(read_sql("sql/account.sql")).df()
@@ -28,6 +28,8 @@ def main() -> None:
     con.close()
 
     months = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    BOLD = "\033[1m"
+    RESET = "\033[0m"
 
     # print(account)
     # print(invoice)
@@ -35,22 +37,106 @@ def main() -> None:
     # print(invoice_line_vr)
     # print(uploads)
 
+    # Check if at least one invoice is uploaded for each account and month
+    def check_missing_invoice() -> None:
+        # Filter for invoice uploads and drop irrelevant columns
+        check_invoice = uploads[uploads["file"] == "invoice"].drop(
+            columns=["file", "vr"]
+        )
+
+        # Create a complete index of all possible account-month combinations
+        invoice_index = pd.MultiIndex.from_product(
+            [account["account"], months], names=["account", "month"]
+        )
+
+        # Count invoices per account-month combination
+        invoice_counts = (
+            check_invoice.groupby(["account", "month"]).size().reset_index(name="count")
+        )
+
+        # Merge with complete index to identify missing combinations (count = 0)
+        complete_df = (
+            invoice_counts.set_index(["account", "month"])
+            .reindex(invoice_index, fill_value=0)
+            .reset_index()
+        )
+
+        # Identify account-months with no invoices
+        missing = complete_df[complete_df["count"] == 0].copy()
+        missing["error"] = "Missing invoice"
+
+        # Print results
+        print(f"\n{BOLD}========== CHECK 'INVOICE' UPLOADS =========={RESET}\n")
+        if not missing.empty:
+            print("Account-Months with Missing Invoices (Less than 1):\n")
+            print(missing[["account", "month", "error"]].to_string(index=False))
+        else:
+            print("No missing invoices.")
+
+    check_missing_invoice()
+
+    # Check if at least two verification reports are uploaded for each account and month
+    def check_missing_vr() -> None:
+        # Filter for verification report uploads and drop irrelevant columns
+        check_vr = uploads[uploads["file"] == "verification_report"].drop(
+            columns=["invoice", "file", "amount", "vr"]
+        )
+
+        # Create a complete index of all possible account-month combinations
+        full_index = pd.MultiIndex.from_product(
+            [account["account"], months], names=["account", "month"]
+        )
+
+        # Count verification reports per account-month
+        vr_counts = (
+            check_vr.groupby(["account", "month"]).size().reset_index(name="count")
+        )
+
+        # Merge with complete index to identify missing VRs (count < 2)
+        vr_complete = (
+            vr_counts.set_index(["account", "month"])
+            .reindex(full_index, fill_value=0)
+            .reset_index()
+        )
+
+        # Identify account-months with fewer than 2 verification reports
+        missing_vr = vr_complete[vr_complete["count"] < 2].copy()
+        missing_vr["error"] = np.where(
+            missing_vr["count"] == 0,
+            "No verification reports",
+            "Insufficient verification reports",
+        )
+
+        # Print results
+        print(
+            f"\n{BOLD}========== CHECK 'VERIFICATION_REPORT' UPLOADS =========={RESET}\n"
+        )
+        if not missing_vr.empty:
+            print("Account-Months with Missing Verification Reports:\n")
+            print(
+                missing_vr[["account", "month", "count", "error"]].to_string(
+                    index=False
+                )
+            )
+        else:
+            print("No missing verification reports.")
+
+    check_missing_vr()
+
     # Check if the "invoice" matches with "uploads", compare the "amount" column, show variance
     # Deleted invoice 5 and modified invoice 8 to 10,000 on "test_missing.db"
     def check_invoice_match() -> None:
         inv = invoice.copy()
         upl = uploads[uploads["file"] == "invoice"].copy()
 
-        # Ensure merge keys are of same type
+        # Ensure numeric types for merging
         for col in ["account", "month", "invoice"]:
             inv[col] = pd.to_numeric(inv[col], errors="coerce")
             upl[col] = pd.to_numeric(upl[col], errors="coerce")
+        inv["amount"] = pd.to_numeric(inv["amount"], errors="coerce")
+        upl["amount"] = pd.to_numeric(upl["amount"], errors="coerce")
 
-        # Convert "amount" to numeric and round
-        inv["amount"] = pd.to_numeric(inv["amount"], errors="coerce").round(0)
-        upl["amount"] = pd.to_numeric(upl["amount"], errors="coerce").round(0)
-
-        # Merge on account, month, invoice
+        # Merge tables
         merged = pd.merge(
             inv,
             upl,
@@ -58,64 +144,99 @@ def main() -> None:
             how="outer",
             suffixes=("_inv", "_upl"),
         )
-
-        # Calculate variance
         merged["variance"] = (merged["amount_inv"] - merged["amount_upl"]).abs()
 
-        # Find mismatches and drop unnecessary columns
-        mismatches = merged[
-            (merged["variance"] > 0.01)
-            | (merged["amount_inv"].isna())
-            | (merged["amount_upl"].isna())
-        ].drop(columns=["file", "vr"])
+        # Add descriptive column for discrepancy type
+        merged["error"] = np.where(
+            merged["amount_inv"].isna(),
+            "Missing in 'invoice' table",
+            np.where(
+                merged["amount_upl"].isna(),
+                "Missing in 'uploads' table",
+                np.where(merged["variance"] > 0.01, "Variance in amount", "Match"),
+            ),
+        )
 
-        print("----- CHECK 'INVOICE' AGAINST 'UPLOADS' TABLE -----")
-        # Print results
+        # Filter discrepancies
+        mismatches = merged[merged["error"] != "Match"].drop(
+            columns=["file", "vr"], errors="ignore"
+        )
+
+        # Print results with enhanced output
+        print(
+            f"\n{BOLD}========== CHECK 'INVOICE' AGAINST 'UPLOADS' TABLE =========={RESET}\n"
+        )
         if not mismatches.empty:
-            print("The following invoices do not match:")
-            print(mismatches)
+            print("The following invoices have discrepancies:\n")
+            print(
+                mismatches[
+                    [
+                        "account",
+                        "month",
+                        "invoice",
+                        "amount_inv",
+                        "amount_upl",
+                        "variance",
+                        "error",
+                    ]
+                ].to_string(index=False, float_format="{:.2f}".format)
+            )
         else:
             print("All invoices match between 'uploads' and 'invoice' table.")
 
     check_invoice_match()
 
-    # Sum "amount" from each "invoiceId" on "invoice_line" and compare to "amount" from "invoice" table
+    # Sum "amount" from each "invoice" on "invoice_line" and compare to "amount" from "invoice" table
     def check_invoice_line() -> None:
         inv_line = invoice_line.copy()
         inv = invoice.copy()
 
-        # Ensure consistent types
-        inv_line["invoice"] = pd.to_numeric(inv_line["invoice"], errors="coerce")
-        inv["invoice"] = pd.to_numeric(inv["invoice"], errors="coerce")
+        # Ensure consistent numeric types for merging
+        inv_line["invoice"] = pd.to_numeric(
+            inv_line["invoice"], errors="coerce"
+        ).astype("Int64")
+        inv["invoice"] = pd.to_numeric(inv["invoice"], errors="coerce").astype("Int64")
+        inv["account"] = pd.to_numeric(inv["account"], errors="coerce").astype("Int64")
 
+        # Convert "amount" to numeric for summation and comparison
         inv_line["amount"] = pd.to_numeric(inv_line["amount"], errors="coerce")
         inv["amount"] = pd.to_numeric(inv["amount"], errors="coerce")
 
-        # Sum line items by invoice
+        # Sum invoice line amounts by invoice
         inv_line_grouped = inv_line.groupby("invoice")["amount"].sum().reset_index()
         inv_line_grouped = inv_line_grouped.rename(columns={"amount": "amount_line"})
 
-        # Merge invoice table with grouped invoice_line using OUTER join
-        merged = pd.merge(
-            inv, inv_line_grouped, on="invoice", how="outer", suffixes=("", "_line")
+        # Merge invoice and invoice_line tables to compare totals
+        merged = pd.merge(inv, inv_line_grouped, on="invoice", how="outer")
+
+        # Calculate absolute variance between totals
+        merged["variance"] = (merged["amount"] - merged["amount_line"]).abs()
+        merged["error"] = np.where(
+            merged["amount"].isna(),
+            "Missing in 'invoice' table",
+            np.where(
+                merged["amount_line"].isna(),
+                "Missing in 'invoice_line' table",
+                np.where(
+                    merged["variance"] > 0.01, "Variance in total amount", "Match"
+                ),
+            ),
         )
 
-        # Calculate variance safely
-        merged["variance"] = (merged["amount"] - merged["amount_line"]).abs()
-
-        # Show mismatches: amount difference or missing on either side
-        mismatches = merged[
-            (merged["variance"] > 0.01)
-            | (merged["amount"].isna())
-            | (merged["amount_line"].isna())
-        ]
+        # Identify mismatches (variance > 0.01 or missing amounts)
+        mismatches = merged[merged["error"] != "Match"]
 
         # Print results
-        print()
-        print("----- CHECK 'INVOICE_LINE' AGAINST 'INVOICE' TABLE -----")
+        print(
+            f"\n{BOLD}========== CHECK 'INVOICE_LINE' AGAINST 'INVOICE' TABLE =========={RESET}\n"
+        )
         if not mismatches.empty:
-            print("Invoice lines that do not match:")
-            print(mismatches)
+            print("Invoices with discrepancies in line totals:\n")
+            print(
+                mismatches[
+                    ["invoice", "amount", "amount_line", "variance", "error"]
+                ].to_string(index=False, float_format="{:.2f}".format)
+            )
         else:
             print("All amounts match between 'invoice' and 'invoice_line' table.")
 
@@ -128,104 +249,199 @@ def main() -> None:
         inv_line_vr = invoice_line_vr.copy()
         inv_line = invoice_line.copy()
 
-        # Count number of lines per invoice
+        # Count lines per invoice in both tables
         count_vr = inv_line_vr.groupby("invoice").size().reset_index(name="count_vr")
         count = inv_line.groupby("invoice").size().reset_index(name="count")
 
-        # Merge the two counts on invoice
+        # Merge counts to compare line counts per invoice
         merged = pd.merge(count_vr, count, on="invoice", how="outer")
 
-        # Fill NaNs (in case an invoice is missing from one of the tables)
+        # Fill NaNs with 0 for missing invoices in either table
         merged = merged.fillna(0)
 
-        # Compare counts
+        # Calculate absolute variance in line counts
         merged["variance"] = (merged["count_vr"] - merged["count"]).abs()
-        mismatches = merged[merged["variance"] > 0]
+        merged["error"] = np.where(
+            merged["count_vr"] > merged["count"],
+            "More lines in VR",
+            np.where(
+                merged["count_vr"] < merged["count"], "Fewer lines in VR", "Match"
+            ),
+        )
+        mismatches = merged[merged["error"] != "Match"]
 
         # Print results
-        print()
-        print("----- CHECK 'INVOICE_LINE_VR' AGAINST 'INVOICE_LINE' TABLE -----")
+        print(
+            f"\n{BOLD}========== CHECK 'INVOICE_LINE_VR' AGAINST 'INVOICE_LINE' TABLE =========={RESET}\n"
+        )
         if not mismatches.empty:
-            print("Invoices with different number of lines:")
-            print(mismatches)
+            print("Invoices with line count discrepancies:\n")
+            print(
+                mismatches[
+                    ["invoice", "count", "count_vr", "variance", "error"]
+                ].to_string(index=False)
+            )
         else:
             print("All lines match between 'invoice_line' and 'invoice_line_vr'.")
 
     check_invoice_line_vr()
 
-    # Check if at least one invoice is uploaded for each account and month
-    def check_missing_invoice() -> None:
-        # Drop unnecessary columns to keep only relevant data
-        check_invoice = uploads[uploads["file"] == "invoice"].drop(
-            columns=["file", "vr"]
+    def check_invoice_line_vr_quantity(summary_only=False) -> None:
+        # Prepare copies of the data
+        inv_line_vr = invoice_line_vr.copy()
+        inv_line = invoice_line.copy()
+
+        # Ensure numeric types for consistency
+        inv_line["invoice"] = pd.to_numeric(
+            inv_line["invoice"], errors="coerce"
+        ).astype("Int64")
+        inv_line_vr["invoice"] = pd.to_numeric(
+            inv_line_vr["invoice"], errors="coerce"
+        ).astype("Int64")
+        inv_line["quantity"] = pd.to_numeric(
+            inv_line["quantity"], errors="coerce"
+        ).astype("float64")
+        inv_line_vr["quantity"] = pd.to_numeric(
+            inv_line_vr["quantity"], errors="coerce"
+        ).astype("float64")
+
+        # Normalize descriptions for matching
+        inv_line["description"] = inv_line["description"].str.strip().str.lower()
+        inv_line_vr["description"] = inv_line_vr["description"].str.strip().str.lower()
+
+        # Aggregate quantities by invoice and description
+        inv_line_grouped = (
+            inv_line.groupby(["invoice", "description"])["quantity"].sum().reset_index()
         )
-
-        # Create a complete index of all possible account-month combinations
-        invoice_index = pd.MultiIndex.from_product(
-            [account["account"], months], names=["account", "month"]
-        )
-
-        # Group the filtered data by account and month, keeping only the first entry per group
-        grouped = check_invoice.groupby(["account", "month"]).first().reset_index()
-
-        # Merge the grouped data with the complete index to ensure all combinations are present
-        complete_df = (
-            grouped.set_index(["account", "month"]).reindex(invoice_index).reset_index()
-        )
-
-        # Identify rows where the 'invoice' value is missing
-        missing = complete_df[complete_df["invoice"].isna()].drop(
-            columns=["invoice", "amount"]
-        )
-
-        # Print results
-        print()
-        print("----- CHECK 'INVOICE' UPLOADS -----")
-        if not missing.empty:
-            print("Accounts with missing invoices:")
-            print(missing)
-        else:
-            print("No missing invoices.")
-
-    check_missing_invoice()
-
-    # Check if at least two verification reports are uploaded for each account and month
-    def check_missing_vr() -> None:
-        # Filter for verification reports
-        check_vr = uploads[uploads["file"] == "verification_report"].drop(
-            columns=["invoice", "file", "amount", "vr"]
-        )
-
-        # Create a complete index of all possible combinations of accounts and months
-        full_index = pd.MultiIndex.from_product(
-            [account["account"], months], names=["account", "month"]
-        )
-
-        # Count the number of verification reports per account and month
-        vr_counts = (
-            check_vr.groupby(["account", "month"]).size().reset_index(name="count")
-        )
-
-        # Merge the counts with the full index to ensure all combinations are present
-        vr_complete = (
-            vr_counts.set_index(["account", "month"])
-            .reindex(full_index, fill_value=0)
+        inv_line_vr_grouped = (
+            inv_line_vr.groupby(["invoice", "description"])["quantity"]
+            .sum()
             .reset_index()
         )
 
-        # Check if any account-month pair has less than 2 verification reports
-        missing_vr = vr_complete[vr_complete["count"] < 2]
+        # Merge aggregated tables to find discrepancies
+        merged = pd.merge(
+            inv_line_grouped,
+            inv_line_vr_grouped,
+            on=["invoice", "description"],
+            how="outer",
+            suffixes=("", "_vr"),
+        ).fillna({"quantity": 0, "quantity_vr": 0})
 
-        # Print results
-        print()
-        print("----- CHECK 'VERIFICATION_REPORT' UPLOADS -----")
-        if not missing_vr.empty:
-            print("Accounts with missing verification reports:")
-            print(missing_vr)
+        # Calculate variance and categorize errors
+        merged["variance"] = (merged["quantity"] - merged["quantity_vr"]).abs()
+        merged["error"] = np.where(
+            merged["quantity"].isna(),
+            "Missing in 'invoice_line'",
+            np.where(
+                merged["quantity_vr"].isna(),
+                "Missing in 'invoice_line_vr'",
+                np.where(merged["variance"] > 0, "Quantity mismatch", "Match"),
+            ),
+        )
+        mismatches = merged[merged["error"] != "Match"].copy()
+
+        # Output based on summary_only parameter
+        print(
+            "\n========== CHECK 'INVOICE_LINE_VR' QUANTITY AGAINST 'INVOICE_LINE' ==========\n"
+        )
+        if summary_only:
+            if not mismatches.empty:
+                summary = (
+                    mismatches.groupby("invoice")
+                    .agg(
+                        missing_in_inv_line=(
+                            "error",
+                            lambda x: (x == "Missing in 'invoice_line'").sum(),
+                        ),
+                        missing_in_inv_line_vr=(
+                            "error",
+                            lambda x: (x == "Missing in 'invoice_line_vr'").sum(),
+                        ),
+                        quantity_mismatch=(
+                            "error",
+                            lambda x: (x == "Quantity mismatch").sum(),
+                        ),
+                        total_variance=("variance", "sum"),
+                    )
+                    .reset_index()
+                )
+                print(
+                    "Summary of discrepancies by invoice: (Set 'False' to show full list)\n"
+                )
+                print(summary.to_string(index=False))
+            else:
+                print("No discrepancies found.")
         else:
-            print("No missing verification reports.")
+            if not mismatches.empty:
+                print("Lines with quantity discrepancies:\n")
+                print(
+                    mismatches[
+                        [
+                            "invoice",
+                            "description",
+                            "quantity",
+                            "quantity_vr",
+                            "variance",
+                            "error",
+                        ]
+                    ].to_string(index=False)
+                )
+            else:
+                print(
+                    "All quantities match between 'invoice_line' and 'invoice_line_vr'."
+                )
 
-    check_missing_vr()
+    check_invoice_line_vr_quantity(summary_only=True)
+
+    def check_missing_extra_lines() -> None:
+        inv_line_vr = invoice_line_vr.copy()
+        inv_line = invoice_line.copy()
+
+        # Normalize data
+        inv_line["invoice"] = pd.to_numeric(
+            inv_line["invoice"], errors="coerce"
+        ).astype("Int64")
+        inv_line_vr["invoice"] = pd.to_numeric(
+            inv_line_vr["invoice"], errors="coerce"
+        ).astype("Int64")
+        inv_line["description"] = inv_line["description"].str.strip().str.lower()
+        inv_line_vr["description"] = inv_line_vr["description"].str.strip().str.lower()
+
+        # Merge with indicator
+        merged = pd.merge(
+            inv_line[["invoice", "description"]],
+            inv_line_vr[["invoice", "description"]],
+            on=["invoice", "description"],
+            how="outer",
+            indicator=True,
+        )
+
+        # Create a single discrepancies dataframe with status
+        discrepancies = merged[merged["_merge"] != "both"].copy()
+        discrepancies["error"] = np.where(
+            discrepancies["_merge"] == "left_only",
+            "Missing in 'invoice_line_vr'",
+            "Missing in 'invoice_line'",
+        )
+
+        # Print results with enhanced output
+        print(
+            "\n========== CHECK MISSING/EXTRA LINES BETWEEN 'INVOICE_LINE' AND 'INVOICE_LINE_VR' ==========\n"
+        )
+        if not discrepancies.empty:
+            print("Lines with discrepancies:\n")
+            print(
+                discrepancies[["invoice", "description", "error"]].to_string(
+                    index=False
+                )
+            )
+        else:
+            print("No missing or extra lines detected.")
+
+    check_missing_extra_lines()
+
+    print(f"\n{BOLD}========================================================={RESET}")
 
 
 if __name__ == "__main__":

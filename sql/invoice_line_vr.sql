@@ -2,6 +2,7 @@ SELECT
     accountId AS account,
     month,
     invoiceId AS invoice,
+    description,
     quantity,
 FROM
     invoice_line_vr

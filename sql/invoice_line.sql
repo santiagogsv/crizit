@@ -1,7 +1,9 @@
 SELECT
     invoiceId AS invoice,
     lineNumber AS line,
-    amount
+    description,
+    amount,
+    quantity,
 FROM
     invoice_line
 ORDER BY
