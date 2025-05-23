@@ -187,6 +187,113 @@ Summary of discrepancies by invoice: (Set 'False' to show full list)
 
 No missing or extra lines detected.
 
+========== CHECK 'INVOICE_LINE_VR' AND 'INVOICE_LINE' DISCREPANCIES ==========
+
+Discrepancies found in 76 invoices.
+Showing the first 3 ('limit' parameter default = 3).
+
+Discrepancies for Invoice: 4
+
+Missing in invoice_line_vr:
+Description                       Quantity (invoice_line)
+------------------------------------------------
+static data refresh fee                         1
+
+Quantity mismatches:
+Description                       Quantity (invoice_line) Quantity (invoice_line_vr)
+---------------------------------------------------------------
+(access) cmoabs pxeod                          22              15
+(access) cmoabs secmastr                       30              15
+(access) corp deriveod                        430             227
+(access) corp pxeod                         44919           13228
+(access) corp secmastr                       2167             174
+(access) eco pxeod                             63               3
+(access) eco pxintra                          126               6
+(access) eco secmastr                         258               5
+(access) eqtyeqtyind deriveod              106101           23669
+(access) eqtyeqtyind estimates             205254            3807
+(access) eqtyeqtyind pxeod                 142449           30307
+(access) eqtyeqtyind pxintra                   42               2
+(access) eqtyeqtyind secmastr              550218           13897
+(access) funds deriveod                       105               5
+(access) funds estimates                   131631            1596
+(access) funds pxeod                       209981           45617
+(access) funds secmastr                    530658            7251
+(access) mtge pxeod                            14               1
+(access) mtge secmastr                         15               1
+(access) muni pxeod                             5               1
+(access) muni secmastr                          5               1
+(access) opfutfx deriveod                     357              17
+(access) opfutfx pxeod                        772             212
+(access) opfutfx secmastr                     349             109
+(access) sovsupagny deriveod                   17               1
+(access) sovsupagny pxeod                    8785            1693
+(access) sovsupagny secmastr                    7               3
+(accessbo) corp secmastr                   337365           18128
+(accessbo) eqtyeqtyind secmastr            416386           83407
+(accessbo) funds secmastr                  107361           38024
+(accessbo) opfutfx secmastr                   105               5
+(accessbo) sovsupagny secmastr              16084            1846
+
+Discrepancies for Invoice: 5
+
+Missing in invoice_line_vr:
+Description                       Quantity (invoice_line)
+------------------------------------------------
+(access) funds deriveod                        22
+(access) funds pxeod                          357
+(access) funds secmastr                        22
+static data refresh fee                         1
+
+Quantity mismatches:
+Description                       Quantity (invoice_line) Quantity (invoice_line_vr)
+---------------------------------------------------------------
+(access) cmoabs deriveod                     1120             714
+(access) cmoabs history                       712             711
+(access) cmoabs rgriskg3misc                  712             711
+(access) cmoabs secmastr                     1525             720
+(access) corp deriveod                        843             136
+(access) corp secmastr                        211             139
+(access) eco derivintra                       158              56
+(access) eco pxintra                          183              68
+(access) eqtyeqtyind derivintra                 2               1
+(access) eqtyeqtyind pxintra                    2               1
+(access) mtge deriveod                       1072             711
+(access) mtge derivintra                       10               5
+(access) mtge history                         709             702
+(access) mtge rgriskg3misc                    609             602
+(access) mtge secmastr                       1731             717
+(access) muni secmastr                       2004            1193
+(access) opfutfx derivintra                   662             283
+(access) opfutfx pxintra                      743             307
+(access) opfutfx secmastr                     679              73
+(access) sovsupagny deriveod                  100              99
+(access) sovsupagny secmastr                  143             130
+(access) usgovt deriveod                     1450              42
+(access) usgovt derivintra                      8               6
+(access) usgovt pxeod                          25               7
+(access) usgovt pxintra                        24              12
+(access) usgovt secmastr                     1350              46
+(accessbo) eqtyeqtyind secmastr                13               1
+
+Discrepancies for Invoice: 6
+
+Quantity mismatches:
+Description                          Quantity (invoice_line) Quantity (invoice_line_vr)
+------------------------------------------------------------------
+schd fi fundamentals unique                     9645            9648
+sched cmo/abs secmaster unique                    61             497
+sched equity derived unique                      181             120
+sched equity pricing unique                      257             143
+sched equity secmaster unique                    112             230
+sched fixedincome derived unique               22841           23275
+sched fixedincome pricing unique               10985           10906
+sched fixedincome secmaster unique             27164           28514
+sched listder pricing unique                    1919             845
+sched mtgepool secmaster unique                  871            9075
+sched municipal derived unique                 57865           59257
+sched municipal secmaster unique               15576           37769
+
 =========================================================
 ```
 
@@ -330,6 +437,118 @@ Lines with discrepancies:
 
  invoice            description                     error
        4 (access) funds pxintra Missing in 'invoice_line'
+
+========== CHECK 'INVOICE_LINE_VR' AND 'INVOICE_LINE' DISCREPANCIES ==========
+
+Discrepancies found in 76 invoices.
+Showing the first 3 ('limit' parameter default = 3).
+
+Discrepancies for Invoice: 4
+
+Missing in invoice_line_vr:
+Description                       Quantity (invoice_line)
+------------------------------------------------
+static data refresh fee                       1.0
+
+Extra in invoice_line_vr:
+Description                       Quantity (invoice_line_vr)
+------------------------------------------------
+(access) funds pxintra                      18663
+
+Quantity mismatches:
+Description                       Quantity (invoice_line) Quantity (invoice_line_vr)
+---------------------------------------------------------------
+(access) cmoabs pxeod                        22.0              15
+(access) cmoabs secmastr                     30.0              15
+(access) corp deriveod                      430.0             227
+(access) corp pxeod                       44919.0           13228
+(access) corp secmastr                     2167.0             174
+(access) eco pxeod                           63.0               3
+(access) eco pxintra                        126.0               6
+(access) eco secmastr                       258.0               5
+(access) eqtyeqtyind deriveod            106101.0           23669
+(access) eqtyeqtyind estimates           205254.0            3807
+(access) eqtyeqtyind pxeod               142449.0           30307
+(access) eqtyeqtyind pxintra                 42.0               2
+(access) eqtyeqtyind secmastr            550218.0           13897
+(access) funds deriveod                     105.0               5
+(access) funds estimates                 131631.0            1596
+(access) funds pxeod                     209981.0           45617
+(access) funds secmastr                  530658.0            7251
+(access) mtge pxeod                          14.0               1
+(access) mtge secmastr                       15.0               1
+(access) muni pxeod                           5.0               1
+(access) muni secmastr                        5.0               1
+(access) opfutfx deriveod                   357.0              17
+(access) opfutfx pxeod                      772.0             212
+(access) opfutfx secmastr                   349.0             109
+(access) sovsupagny deriveod                 17.0               1
+(access) sovsupagny pxeod                  8785.0            1693
+(access) sovsupagny secmastr                  7.0               3
+(accessbo) corp secmastr                 337365.0           18128
+(accessbo) eqtyeqtyind secmastr          416386.0           83407
+(accessbo) funds secmastr                107361.0           38024
+(accessbo) opfutfx secmastr                 105.0               5
+(accessbo) sovsupagny secmastr            16084.0            1846
+
+Discrepancies for Invoice: 5
+
+Missing in invoice_line_vr:
+Description                       Quantity (invoice_line)
+------------------------------------------------
+(access) funds deriveod                        22
+(access) funds pxeod                          357
+(access) funds secmastr                        22
+static data refresh fee                         1
+
+Quantity mismatches:
+Description                       Quantity (invoice_line) Quantity (invoice_line_vr)
+---------------------------------------------------------------
+(access) cmoabs deriveod                     1120             714
+(access) cmoabs history                       712             711
+(access) cmoabs rgriskg3misc                  712             711
+(access) cmoabs secmastr                     1525             720
+(access) corp deriveod                        843             136
+(access) corp secmastr                        211             139
+(access) eco derivintra                       158              56
+(access) eco pxintra                          183              68
+(access) eqtyeqtyind derivintra                 2               1
+(access) eqtyeqtyind pxintra                    2               1
+(access) mtge deriveod                       1072             711
+(access) mtge derivintra                       10               5
+(access) mtge history                         709             702
+(access) mtge rgriskg3misc                    609             602
+(access) mtge secmastr                       1731             717
+(access) muni secmastr                       2004            1193
+(access) opfutfx derivintra                   662             283
+(access) opfutfx pxintra                      743             307
+(access) opfutfx secmastr                     679              73
+(access) sovsupagny deriveod                  100              99
+(access) sovsupagny secmastr                  143             130
+(access) usgovt deriveod                     1450              42
+(access) usgovt derivintra                      8               6
+(access) usgovt pxeod                          25               7
+(access) usgovt pxintra                        24              12
+(access) usgovt secmastr                     1350              46
+(accessbo) eqtyeqtyind secmastr                13               1
+
+Discrepancies for Invoice: 6
+
+Quantity mismatches:
+Description                          Quantity (invoice_line) Quantity (invoice_line_vr)
+------------------------------------------------------------------
+schd fi fundamentals unique                     9645            9648
+sched cmo/abs secmaster unique                    61             497
+sched equity derived unique                      181             120
+sched equity pricing unique                      257             143
+sched equity secmaster unique                    112             230
+sched fixedincome derived unique               22841           23275
+sched fixedincome pricing unique               10985           10906
+sched fixedincome secmaster unique             27164           28514
+sched listder pricing unique                    1919             845
+sched mtgepool secmaster unique                  871            9075
+sched municipal derived unique                 57865           59257
+sched municipal secmaster unique               15576           37769
 
 =========================================================
 ```

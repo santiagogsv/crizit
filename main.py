@@ -343,7 +343,7 @@ def main() -> None:
 
         # Output based on summary_only parameter
         print(
-            "\n========== CHECK 'INVOICE_LINE_VR' QUANTITY AGAINST 'INVOICE_LINE' ==========\n"
+            f"\n{BOLD}========== CHECK 'INVOICE_LINE_VR' QUANTITY AGAINST 'INVOICE_LINE' =========={RESET}\n"
         )
         if summary_only:
             if not mismatches.empty:
@@ -427,7 +427,7 @@ def main() -> None:
 
         # Print results with enhanced output
         print(
-            "\n========== CHECK MISSING/EXTRA LINES BETWEEN 'INVOICE_LINE' AND 'INVOICE_LINE_VR' ==========\n"
+            f"\n{BOLD}========== CHECK MISSING/EXTRA LINES BETWEEN 'INVOICE_LINE' AND 'INVOICE_LINE_VR' =========={RESET}\n"
         )
         if not discrepancies.empty:
             print("Lines with discrepancies:\n")
@@ -440,6 +440,142 @@ def main() -> None:
             print("No missing or extra lines detected.")
 
     check_missing_extra_lines()
+
+    # This is the most complete check for discrepancies between invoice_line and invoice_line_vr
+    def check_discrepancies(limit: int = 3) -> None:
+        # Check for discrepancies between invoice_line and invoice_line_vr DataFrames.
+        # Uses global invoice_line and invoice_line_vr DataFrames fetched from the database.
+
+        # Copy global DataFrames to avoid modifying originals
+        inv_line = invoice_line.copy()
+        inv_line_vr = invoice_line_vr.copy()
+
+        # Normalize descriptions
+        inv_line["description"] = inv_line["description"].str.strip().str.lower()
+        inv_line_vr["description"] = inv_line_vr["description"].str.strip().str.lower()
+
+        # Get all unique invoices
+        all_invoices = set(inv_line["invoice"].unique()) | set(
+            inv_line_vr["invoice"].unique()
+        )
+
+        discrepancies = []
+        discrepancy_details = {}
+
+        for invoice in all_invoices:
+            # Filter data for the current invoice
+            il_subset = inv_line[inv_line["invoice"] == invoice]
+            il_vr_subset = inv_line_vr[inv_line_vr["invoice"] == invoice]
+
+            # Group by description and sum quantities
+            il_grouped = (
+                il_subset.groupby("description")["quantity"].sum().reset_index()
+            )
+            il_vr_grouped = (
+                il_vr_subset.groupby("description")["quantity"].sum().reset_index()
+            )
+
+            # Merge dataframes to compare
+            merged = pd.merge(
+                il_grouped,
+                il_vr_grouped,
+                on="description",
+                how="outer",
+                suffixes=("_il", "_vr"),
+            ).fillna(0)
+
+            # Identify discrepancies
+            missing_in_vr = merged[merged["quantity_vr"] == 0]
+            extra_in_vr = merged[merged["quantity_il"] == 0]
+            quantity_mismatch = merged[
+                (merged["quantity_il"] != 0)
+                & (merged["quantity_vr"] != 0)
+                & (merged["quantity_il"] != merged["quantity_vr"])
+            ]
+
+            # Store results if discrepancies exist
+            if not (
+                missing_in_vr.empty and extra_in_vr.empty and quantity_mismatch.empty
+            ):
+                discrepancies.append(invoice)
+                discrepancy_details[invoice] = {
+                    "missing_in_vr": missing_in_vr[
+                        ["description", "quantity_il"]
+                    ].to_dict("records"),
+                    "extra_in_vr": extra_in_vr[["description", "quantity_vr"]].to_dict(
+                        "records"
+                    ),
+                    "quantity_mismatch": quantity_mismatch[
+                        ["description", "quantity_il", "quantity_vr"]
+                    ].to_dict("records"),
+                }
+        print(
+            f"\n{BOLD}========== CHECK 'INVOICE_LINE_VR' AND 'INVOICE_LINE' DISCREPANCIES =========={RESET}\n"
+        )
+
+        # Output results in table-like structure
+        if discrepancies:
+            print(
+                f"Discrepancies found in {len(discrepancies)} invoices.\nShowing the first {limit} ('limit' parameter default = 3)."
+            )
+            for inv_id in discrepancies[:limit]:  # Show details for first 3 invoices
+                print(f"\nDiscrepancies for Invoice: {inv_id}")
+                details = discrepancy_details[inv_id]
+
+                # Collect all unique descriptions for consistent column width
+                descriptions = set()
+                for item in details["missing_in_vr"]:
+                    descriptions.add(item["description"])
+                for item in details["extra_in_vr"]:
+                    descriptions.add(item["description"])
+                for item in details["quantity_mismatch"]:
+                    descriptions.add(item["description"])
+
+                # Calculate column widths
+                desc_width = (
+                    max(len(desc) for desc in descriptions) + 2 if descriptions else 20
+                )
+                qty_width = 15
+
+                # Section 1: Missing in invoice_line_vr
+                if details["missing_in_vr"]:
+                    print("\nMissing in invoice_line_vr:")
+                    print(
+                        f"{'Description':<{desc_width}} {'Quantity (invoice_line)':>{qty_width}}"
+                    )
+                    print("-" * (desc_width + qty_width))
+                    for item in details["missing_in_vr"]:
+                        print(
+                            f"{item['description']:<{desc_width}} {item['quantity_il']:>{qty_width}}"
+                        )
+
+                # Section 2: Extra in invoice_line_vr
+                if details["extra_in_vr"]:
+                    print("\nExtra in invoice_line_vr:")
+                    print(
+                        f"{'Description':<{desc_width}} {'Quantity (invoice_line_vr)':>{qty_width}}"
+                    )
+                    print("-" * (desc_width + qty_width))
+                    for item in details["extra_in_vr"]:
+                        print(
+                            f"{item['description']:<{desc_width}} {item['quantity_vr']:>{qty_width}}"
+                        )
+
+                # Section 3: Quantity mismatches
+                if details["quantity_mismatch"]:
+                    print("\nQuantity mismatches:")
+                    print(
+                        f"{'Description':<{desc_width}} {'Quantity (invoice_line)':>{qty_width}} {'Quantity (invoice_line_vr)':>{qty_width}}"
+                    )
+                    print("-" * (desc_width + 2 * qty_width))
+                    for item in details["quantity_mismatch"]:
+                        print(
+                            f"{item['description']:<{desc_width}} {item['quantity_il']:>{qty_width}} {item['quantity_vr']:>{qty_width}}"
+                        )
+        else:
+            print("No discrepancies found. All invoice lines match.")
+
+    check_discrepancies()
 
     print(f"\n{BOLD}========================================================={RESET}")
 
