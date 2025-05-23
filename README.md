@@ -59,6 +59,10 @@ Uses DuckDB (`test.db` or `test_missing.db`). Switch by commenting/uncommenting.
    - Checks for descriptions that are present in "invoice_line" but missing in "invoice_line_vr", and vice versa, for each invoice.
    - Reports missing or extra descriptions per invoice.
 
+8. **Detailed Lines Discrepancies** (`check_discrepancies`):
+   - Checks for descriptions that are present in "invoice_line" but missing in "invoice_line_vr", and vice versa, for each invoice.
+   - Detailed reports missing or extra descriptions per invoice.
+
 ## Usage
 1. Place SQL files in `sql/` and database in script directory.
 2. Run: `uv run main.py` or `python main.py`
