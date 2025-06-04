@@ -1,7 +1,8 @@
 # Invoice and Verification Reports Validation Script
 
 ## Overview
-This script validates data from a DuckDB database, checking invoices, invoice lines, verification reports, and uploads for discrepancies and missing records. It generates detailed markdown reports organized in a structured directory for easy review and sharing.
+This script validates data from a DuckDB database, checking invoices, invoice lines, verification reports, and uploads for discrepancies and missing records. It generates detailed markdown reports organized in a structured directory for easy review and sharing. [CLICK TO OPEN RESULTS](results/results.md)
+
 
 1. Retrieves data from DuckDB using SQL queries and Pandas.
 2. Validates uploads and checks for missing records.
@@ -11,10 +12,10 @@ This script validates data from a DuckDB database, checking invoices, invoice li
 ## Dependencies
 - `pandas`
 - `duckdb`
-- `numpy`
+- `tabulate`
 
 Install using `uv` (recommended): `uv run main.py`  
-Or using pip: `pip install pandas duckdb numpy`
+Or using pip: `pip install pandas duckdb tabulate`
 
 ## File Structure
 - **Script**: Core logic for database connection, validation, and report generation.
@@ -62,7 +63,8 @@ Uses DuckDB (`test.db`). The script connects to the database to retrieve data fo
 ## Output
 The script generates markdown files for easy sharing and review:
 
-- [Results](results/results.md)
+- [CLICK TO OPEN RESULTS](results/results.md)
+
 
 ## Limitations
 - Hardcoded months (March to December) and database path (`test.db`).
