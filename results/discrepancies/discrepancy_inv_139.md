@@ -1,0 +1,46 @@
+# Discrepancies for Invoice: 139
+
+## Missing in invoice_line_vr
+
+| description                  |   quantity_il |
+|:-----------------------------|--------------:|
+| (access) sovsupagny deriveod |             4 |
+| bfix access                  |             1 |
+| sales tax                    |             1 |
+| static data refresh fee      |             1 |
+
+## Quantity mismatches
+
+| description                    |   quantity_il |   quantity_vr |
+|:-------------------------------|--------------:|--------------:|
+| (access) cmoabs derivintra     |           150 |            20 |
+| (access) cmoabs pxeod          |           318 |            50 |
+| (access) corp deriveod         |           683 |           229 |
+| (access) corp derivintra       |         14694 |          2275 |
+| (access) corp pxeod            |          3489 |           294 |
+| (access) corp pxintra          |           439 |            60 |
+| (access) eco pxeod             |          1168 |            36 |
+| (access) eco pxintra           |          8766 |           421 |
+| (access) eco secmastr          |         12632 |           486 |
+| (access) eqtyeqtyind pxeod     |         26365 |          2131 |
+| (access) eqtyeqtyind pxintra   |         33538 |          1903 |
+| (access) eqtyeqtyind secmastr  |         43585 |          2131 |
+| (access) funds pxeod           |         17639 |           471 |
+| (access) funds pxintra         |           454 |            62 |
+| (access) funds secmastr        |            96 |             5 |
+| (access) muni deriveod         |            10 |             8 |
+| (access) muni derivintra       |           179 |            30 |
+| (access) muni pxeod            |            46 |             7 |
+| (access) opfutfx pxeod         |         92274 |         16249 |
+| (access) opfutfx pxintra       |          7426 |           753 |
+| (access) opfutfx secmastr      |          2872 |           135 |
+| (access) sovsupagny derivintra |           708 |            57 |
+| (access) sovsupagny pxeod      |            40 |             3 |
+| (access) usgovt deriveod       |            41 |            12 |
+| (access) usgovt derivintra     |          1162 |           166 |
+| (accessbo) funds secmastr      |           432 |            18 |
+| (initial) muni deriveod        |         14289 |         41783 |
+| (initial) muni derivintra      |            15 |         44210 |
+| (initial) muni pxeod           |             9 |         30107 |
+| (initial) muni secmastr        |           158 |         45865 |
+

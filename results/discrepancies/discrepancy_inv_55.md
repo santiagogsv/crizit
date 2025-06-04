@@ -1,0 +1,16 @@
+# Discrepancies for Invoice: 55
+
+## Missing in invoice_line_vr
+
+| description            |   quantity_il |
+|:-----------------------|--------------:|
+| bval minimum flat rate |             1 |
+
+## Quantity mismatches
+
+| description     |   quantity_il |   quantity_vr |
+|:----------------|--------------:|--------------:|
+| bval access fee |           247 |            46 |
+| muni ig history |            18 |            10 |
+| us govt history |             5 |             3 |
+
