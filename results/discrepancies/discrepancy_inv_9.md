@@ -11,4 +11,3 @@
 | description     |   quantity_il |   quantity_vr |
 |:----------------|--------------:|--------------:|
 | bval access fee |           161 |            41 |
-
