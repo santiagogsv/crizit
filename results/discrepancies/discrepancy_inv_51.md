@@ -10,7 +10,7 @@
 
 | description            |   quantity_il |   quantity_vr |
 |:-----------------------|--------------:|--------------:|
-| ig t2 mthly ny4pm      |            42 |            43 |
-| convrt t2 mthly ny4pm  |            15 |            20 |
 | bval access fee        |           223 |           147 |
+| convrt t2 mthly ny4pm  |            15 |            20 |
+| ig t2 mthly ny4pm      |            42 |            43 |
 | corp hy t2 mthly ny4pm |             8 |            11 |

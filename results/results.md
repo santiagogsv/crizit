@@ -4,22 +4,22 @@
 
 ### Discrepancies in invoice_uploads
 
-|   account |   month |   count | error                      |
-|----------:|--------:|--------:|:---------------------------|
-|         1 |       3 |       0 | Missing in invoice_uploads |
-|        10 |       3 |       0 | Missing in invoice_uploads |
+|   account |   month |   found_count | error                      |
+|----------:|--------:|--------------:|:---------------------------|
+|         1 |       3 |             0 | Missing in invoice_uploads |
+|        10 |       3 |             0 | Missing in invoice_uploads |
 
 ### Discrepancies in vr_uploads
 
-|   account |   month |   count | error                 |
-|----------:|--------:|--------:|:----------------------|
-|         1 |       3 |       0 | Missing in vr_uploads |
-|         3 |       3 |       0 | Missing in vr_uploads |
-|         4 |       3 |       0 | Missing in vr_uploads |
-|         6 |       3 |       0 | Missing in vr_uploads |
-|         7 |       3 |       0 | Missing in vr_uploads |
-|        10 |       3 |       0 | Missing in vr_uploads |
-|        10 |      10 |       0 | Missing in vr_uploads |
+|   account |   month |   found_count | error                 |
+|----------:|--------:|--------------:|:----------------------|
+|         1 |       3 |             0 | Missing in vr_uploads |
+|         3 |       3 |             0 | Missing in vr_uploads |
+|         4 |       3 |             0 | Missing in vr_uploads |
+|         6 |       3 |             0 | Missing in vr_uploads |
+|         7 |       3 |             0 | Missing in vr_uploads |
+|        10 |       3 |             0 | Missing in vr_uploads |
+|        10 |      10 |             0 | Missing in vr_uploads |
 
 ## Discrepancy Checks
 

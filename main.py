@@ -10,22 +10,22 @@ def read_sql(file_path) -> str:
 
 
 def check_missing_records(
-    df: pd.DataFrame,
-    group_cols: list,
+    con: duckdb.DuckDBPyConnection,
+    complete_index: pd.DataFrame,
+    file_type: str,
     required_count: int,
-    complete_index: pd.MultiIndex,
     df_label: str,
 ) -> str:
-    """Checks for missing records using a more performant merge-based approach."""
-    complete_df = complete_index.to_frame(index=False)
-    counts = df.groupby(group_cols).size().reset_index(name="count")
-    merged = pd.merge(complete_df, counts, on=group_cols, how="left").fillna(0)
-    missing = merged[merged["count"] < required_count].copy()
-    missing["error"] = f"Missing in {df_label}"
+    """Checks for missing records using a SQL query executed in DuckDB."""
+    # Register the complete_index DataFrame as a temporary table in DuckDB
+    con.register('complete_index_temp', complete_index)
 
-    if not missing.empty:
-        missing["count"] = missing["count"].astype(int)
-        missing_table = missing.to_markdown(index=False)
+    missing_query = read_sql("sql/missing_records_check.sql")
+    missing_df = con.sql(missing_query, params=[file_type, required_count]).df()
+
+    if not missing_df.empty:
+        missing_df["error"] = f"Missing in {df_label}"
+        missing_table = missing_df.to_markdown(index=False)
         return f"### Discrepancies in {df_label}\n\n{missing_table}\n\n"
     else:
         return f"### Discrepancies in {df_label}\n\nNo missing records found.\n\n"
@@ -88,18 +88,17 @@ def main() -> None:
     # Prepare complete index for missing records check
     months = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
     unique_accounts = account["account"].unique().tolist()
-    complete_index = pd.MultiIndex.from_product(
-        [unique_accounts, months], names=["account", "month"]
+    complete_index_df = pd.DataFrame(
+        list(pd.MultiIndex.from_product([unique_accounts, months], names=["account", "month"]))
     )
+    complete_index_df.columns = ["account", "month"]
 
     # Check for missing uploads
-    invoice_uploads = uploads[uploads["file"] == "invoice"].copy()
-    vr_uploads = uploads[uploads["file"] == "verification_report"].copy()
     invoice_missing = check_missing_records(
-        invoice_uploads, ["account", "month"], 1, complete_index, "invoice_uploads"
+        con, complete_index_df, "invoice", 1, "invoice_uploads"
     )
     vr_missing = check_missing_records(
-        vr_uploads, ["account", "month"], 2, complete_index, "vr_uploads"
+        con, complete_index_df, "verification_report", 2, "vr_uploads"
     )
 
     # Get discrepancy details
