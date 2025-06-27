@@ -10,11 +10,11 @@
 
 | description                  |   quantity_il |   quantity_vr |
 |:-----------------------------|--------------:|--------------:|
-| sched listder pricing unique |          1706 |           755 |
-| (access) opfutfx pxeod       |        405323 |           297 |
-| (access) usgovt pxintra      |         63067 |            16 |
 | (access) sovsupagny pxintra  |        168320 |            30 |
-| (access) opfutfx history     |           219 |            74 |
-| sched listder pricing access |           661 |           660 |
+| (access) usgovt pxintra      |         63067 |            16 |
+| sched listder pricing unique |          1706 |           755 |
 | (access) opfutfx pxintra     |        820817 |           137 |
+| sched listder pricing access |           661 |           660 |
+| (access) opfutfx history     |           219 |            74 |
+| (access) opfutfx pxeod       |        405323 |           297 |
 | bval access fee              |           383 |             1 |

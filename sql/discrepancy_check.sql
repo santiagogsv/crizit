@@ -1,41 +1,32 @@
 -- Compare invoice_line and invoice_line_vr to find discrepancies
-WITH
-  il_grouped AS (
+WITH combined AS (
     SELECT
-      invoiceId AS invoice,
-      lower(trim(description)) AS description,
-      sum(quantity) AS quantity_il
+        invoiceId as invoice,
+        lower(trim(description)) as description,
+        quantity as quantity_il,
+        0 as quantity_vr
     FROM invoice_line
-    GROUP BY
-      invoiceId,
-      description
-  ),
-  il_vr_grouped AS (
+    UNION ALL
     SELECT
-      invoiceId AS invoice,
-      lower(trim(description)) AS description,
-      sum(quantity) AS quantity_vr
+        invoiceId as invoice,
+        lower(trim(description)) as description,
+        0 as quantity_il,
+        quantity as quantity_vr
     FROM invoice_line_vr
-    GROUP BY
-      invoiceId,
-      description
-  ),
-  merged AS (
+),
+grouped as (
     SELECT
-      coalesce(il.invoice, il_vr.invoice) AS invoice,
-      coalesce(il.description, il_vr.description) AS description,
-      coalesce(il.quantity_il, 0) AS quantity_il,
-      coalesce(il_vr.quantity_vr, 0) AS quantity_vr
-    FROM il_grouped AS il
-    FULL OUTER JOIN
-      il_vr_grouped AS il_vr
-      ON il.invoice = il_vr.invoice AND il.description = il_vr.description
-  )
+        invoice,
+        description,
+        sum(quantity_il) as quantity_il,
+        sum(quantity_vr) as quantity_vr
+    FROM combined
+    GROUP BY invoice, description
+)
 SELECT
-  invoice,
-  description,
-  quantity_il,
-  quantity_vr
-FROM merged
-WHERE
-  quantity_il <> quantity_vr;
+    invoice,
+    description,
+    quantity_il,
+    quantity_vr
+FROM grouped
+WHERE quantity_il <> quantity_vr

@@ -10,11 +10,11 @@
 
 | description                  |   quantity_il |   quantity_vr |
 |:-----------------------------|--------------:|--------------:|
-| (access) sovsupagny pxintra  |        215010 |           171 |
-| sched listder pricing access |           856 |           849 |
-| (access) opfutfx history     |           186 |           131 |
-| (access) opfutfx pxeod       |        634530 |           429 |
-| sched listder pricing unique |          1919 |           983 |
 | (access) corp pxintra        |          1269 |            27 |
+| (access) sovsupagny pxintra  |        215010 |           171 |
+| (access) opfutfx pxeod       |        634530 |           429 |
 | (access) usgovt pxintra      |        128985 |           121 |
+| (access) opfutfx history     |           186 |           131 |
+| sched listder pricing unique |          1919 |           983 |
 | (access) opfutfx pxintra     |        879634 |           166 |
+| sched listder pricing access |           856 |           849 |

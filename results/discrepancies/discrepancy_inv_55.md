@@ -10,6 +10,6 @@
 
 | description     |   quantity_il |   quantity_vr |
 |:----------------|--------------:|--------------:|
-| bval access fee |           247 |            46 |
 | us govt history |             5 |             3 |
+| bval access fee |           247 |            46 |
 | muni ig history |            18 |            10 |

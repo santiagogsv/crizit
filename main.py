@@ -1,4 +1,3 @@
-import pandas as pd
 import duckdb
 import os
 import re
@@ -9,26 +8,38 @@ def read_sql(file_path) -> str:
         return file.read()
 
 
-def check_missing_records(
-    con: duckdb.DuckDBPyConnection,
-    complete_index: pd.DataFrame,
-    file_type: str,
-    required_count: int,
-    df_label: str,
-) -> str:
-    """Checks for missing records using a SQL query executed in DuckDB."""
-    # Register the complete_index DataFrame as a temporary table in DuckDB
-    con.register('complete_index_temp', complete_index)
+def check_missing_uploads(con: duckdb.DuckDBPyConnection) -> tuple[str, str]:
+    """Checks for missing invoice and verification report uploads."""
+    query = read_sql("sql/missing_uploads_check.sql")
+    missing_results = con.sql(query).fetchall()
 
-    missing_query = read_sql("sql/missing_records_check.sql")
-    missing_df = con.sql(missing_query, params=[file_type, required_count]).df()
+    invoice_missing = []
+    vr_missing = []
 
-    if not missing_df.empty:
-        missing_df["error"] = f"Missing in {df_label}"
-        missing_table = missing_df.to_markdown(index=False)
-        return f"### Discrepancies in {df_label}\n\n{missing_table}\n\n"
-    else:
-        return f"### Discrepancies in {df_label}\n\nNo missing records found.\n\n"
+    for row in missing_results:
+        if row[2] < 1:
+            invoice_missing.append(row)
+        if row[3] < 2:
+            vr_missing.append(row)
+
+    def format_missing_section(results: list, label: str, headers: list[str]) -> str:
+        if not results:
+            return f"### No missing records in {label}\n\n"
+
+        header = " | ".join(headers)
+        separator = " | ".join(["---"] * len(headers))
+        body = "\n".join([" | ".join(map(str, row)) for row in results])
+        return f"### Missing in {label}\n\n{header}\n{separator}\n{body}\n\n"
+
+    invoice_missing_str = format_missing_section(
+        invoice_missing, "invoice_uploads", ["Account", "Month", "Found Invoices", "Found VRs"]
+    )
+    vr_missing_str = format_missing_section(
+        vr_missing, "vr_uploads", ["Account", "Month", "Found Invoices", "Found VRs"]
+    )
+
+    return invoice_missing_str, vr_missing_str
+
 
 
 def check_discrepancies(con: duckdb.DuckDBPyConnection) -> dict:
@@ -80,26 +91,11 @@ def sanitize_filename(name) -> str:
 
 
 def main() -> None:
-    # Connect to database and load data
+    # Connect to database
     con = duckdb.connect("test.db")
-    account = con.sql(read_sql("sql/account.sql")).df()
-    uploads = con.sql(read_sql("sql/uploads.sql")).df()
-
-    # Prepare complete index for missing records check
-    months = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
-    unique_accounts = account["account"].unique().tolist()
-    complete_index_df = pd.DataFrame(
-        list(pd.MultiIndex.from_product([unique_accounts, months], names=["account", "month"]))
-    )
-    complete_index_df.columns = ["account", "month"]
 
     # Check for missing uploads
-    invoice_missing = check_missing_records(
-        con, complete_index_df, "invoice", 1, "invoice_uploads"
-    )
-    vr_missing = check_missing_records(
-        con, complete_index_df, "verification_report", 2, "vr_uploads"
-    )
+    invoice_missing, vr_missing = check_missing_uploads(con)
 
     # Get discrepancy details
     discrepancy_details = check_discrepancies(con)

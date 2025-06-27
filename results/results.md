@@ -2,24 +2,24 @@
 
 ## Upload Checks
 
-### Discrepancies in invoice_uploads
+### Missing in invoice_uploads
 
-|   account |   month |   found_count | error                      |
-|----------:|--------:|--------------:|:---------------------------|
-|         1 |       3 |             0 | Missing in invoice_uploads |
-|        10 |       3 |             0 | Missing in invoice_uploads |
+Account | Month | Found Invoices | Found VRs
+--- | --- | --- | ---
+1 | 3 | 0 | 0
+10 | 3 | 0 | 0
 
-### Discrepancies in vr_uploads
+### Missing in vr_uploads
 
-|   account |   month |   found_count | error                 |
-|----------:|--------:|--------------:|:----------------------|
-|         1 |       3 |             0 | Missing in vr_uploads |
-|         3 |       3 |             0 | Missing in vr_uploads |
-|         4 |       3 |             0 | Missing in vr_uploads |
-|         6 |       3 |             0 | Missing in vr_uploads |
-|         7 |       3 |             0 | Missing in vr_uploads |
-|        10 |       3 |             0 | Missing in vr_uploads |
-|        10 |      10 |             0 | Missing in vr_uploads |
+Account | Month | Found Invoices | Found VRs
+--- | --- | --- | ---
+3 | 3 | 1 | 0
+4 | 3 | 1 | 0
+6 | 3 | 1 | 0
+7 | 3 | 1 | 0
+10 | 10 | 2 | 0
+1 | 3 | 0 | 0
+10 | 3 | 0 | 0
 
 ## Discrepancy Checks
 
